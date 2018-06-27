@@ -16,7 +16,7 @@ def mosaic_list_from_parser(args):
             print('Processing Grid '+str(filelist))
             idl(infile=os.path.join(args.local,filelist),start=args.start,end=args.end)
 def download_mosaic_from_parser(args):
-    download(filepath=args.local)
+    download(filepath=args.local,coverage=args.coverage)
 def download_metadata_from_parser(args):
     idm(start=args.start,end=args.end)
 def shp2gj_metadata_from_parser(args):
@@ -35,6 +35,7 @@ def main(args=None):
 
     parser_download=subparsers.add_parser('download_quad',help='Download metadata quads')
     parser_download.add_argument('--local', help='Choose folder with geojson files')
+    parser_download.add_argument('--coverage', help='Choose folder with geojson files')
     parser_download.set_defaults(func=download_mosaic_from_parser)
 
     parser_idm=subparsers.add_parser('download_metadata',help='Download Quad Metadata')
