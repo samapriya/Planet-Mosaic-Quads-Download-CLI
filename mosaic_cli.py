@@ -1,14 +1,18 @@
-import os,argparse
+import os,argparse,csv
 from mosaic_grid import idl
 from download_mosaic import download
 from mosaic_metadata import idm
 from shp2geojson import shp2gj
 from planet.api.auth import find_api_key
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
-
+pathway=os.path.dirname(os.path.realpath(__file__))
 def mosaic_list_from_parser(args):
+    with open(os.path.join(pathway,"ids.csv"),'wb') as csvfile:
+        writer=csv.DictWriter(csvfile,fieldnames=["id","minx","miny","maxx","maxy"], delimiter=',')
+        writer.writeheader()
     for filelist in os.listdir(args.local):
         if filelist.endswith('.geojson'):
+            print('')
             print('Processing Grid '+str(filelist))
             idl(infile=os.path.join(args.local,filelist),start=args.start,end=args.end)
 def download_mosaic_from_parser(args):

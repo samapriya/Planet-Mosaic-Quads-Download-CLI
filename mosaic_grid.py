@@ -20,14 +20,12 @@ except:
 
 SESSION = requests.Session()
 SESSION.auth = (PL_API_KEY, '')
-with open(os.path.join(pathway,"ids.csv"),'wb') as csvfile:
-    writer=csv.DictWriter(csvfile,fieldnames=["id","minx","miny","maxx","maxy"], delimiter=',')
-    writer.writeheader()
+
 def handle_page(page,year,minx,miny,maxx,maxy):
     n=0
     for items in page['mosaics']:
         if items['name'].startswith('global_monthly_'+str(year)):
-            #print(items['name'],items['id'])
+            print(items['name'])
             with open(os.path.join(pathway,"ids.csv"),'a') as csvfile:
                 writer=csv.writer(csvfile,delimiter=',',lineterminator='\n')
                 writer.writerow([items['id'],minx,miny,maxx,maxy])
@@ -40,7 +38,9 @@ def idl(infile,start,end):
         with open(infile) as aoi:
             geomloader = json.load(aoi)
             cinsert= geomloader['features'][0]['geometry']['coordinates']
+            #print(cinsert)
             cin=ee.Geometry.Polygon(cinsert).bounds().getInfo()['coordinates'][0]
+            #print(cin)
             for coord in str(cin).split('],'):
                 x=(coord.replace('[','').replace(']','').split(',')[0].strip())
                 y=(coord.replace('[','').replace(']','').split(',')[1].strip())
@@ -50,7 +50,6 @@ def idl(infile,start,end):
             minx=(min(cdx))
             maxy=(max(cdy))
             miny=(min(cdy))
-            #print(maxx,minx,maxy,miny)
         ## Send get request
             result = requests.get('https://api.planet.com/mosaic/experimental/mosaics',auth=(PL_API_KEY, ''))
             page=result.json()
