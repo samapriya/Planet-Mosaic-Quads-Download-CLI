@@ -20,7 +20,7 @@ def download(filepath=None):
         with open(os.path.join(planethome,"ids.csv")) as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
-                        url=('https://api.planet.com/mosaic/experimental/mosaics/'+str(row['id'])+'/quads?bbox='+str(row['minx'])+'%2C'+str(row['miny'])+'%2C'+str(row['minx'])+'%2C'+str(row['miny']))
+                        url=('https://api.planet.com/mosaic/experimental/mosaics/'+str(row['id'])+'/quads?bbox='+str(row['maxx'])+'%2C'+str(row['maxy'])+'%2C'+str(row['minx'])+'%2C'+str(row['miny']))
                         main=requests.get(url,auth=(PL_API_KEY, '')).json()
                         for stuff in main['items']:
                                 downlink='https://api.planet.com/mosaic/experimental/mosaics/'+row['id']+'/quads/'+stuff['id']+'/full?api_key='+str(PL_API_KEY)

@@ -21,8 +21,8 @@ except:
 SESSION = requests.Session()
 SESSION.auth = (PL_API_KEY, '')
 with open(os.path.join(pathway,"ids.csv"),'wb') as csvfile:
-        writer=csv.DictWriter(csvfile,fieldnames=["id","minx","miny","maxx","maxy"], delimiter=',')
-        writer.writeheader()
+    writer=csv.DictWriter(csvfile,fieldnames=["id","minx","miny","maxx","maxy"], delimiter=',')
+    writer.writeheader()
 def handle_page(page,year,minx,miny,maxx,maxy):
     n=0
     for items in page['mosaics']:
