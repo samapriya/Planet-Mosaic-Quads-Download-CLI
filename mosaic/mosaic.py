@@ -53,7 +53,7 @@ def main(args=None):
     parser_idl.set_defaults(func=mosaic_list_from_parser)
 
     parser_download = subparsers.add_parser('download_quad',
-            help='Download metadata quads')
+            help='Download quad GeoTiffs')
     parser_download.add_argument('--local',
                                  help='Choose folder to download images'
                                  )
