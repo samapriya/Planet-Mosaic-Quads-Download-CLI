@@ -73,8 +73,7 @@ def idm(start, end):
     PL_API_KEY = read_planet_json()['key']
     for year in range(int(start), int(end) + 1):
         result = \
-            requests.get('https://api.planet.com/mosaic/experimental/mosaics'
-                         , auth=(PL_API_KEY, ''))
+            SESSION.get('https://api.planet.com/basemaps/v1/mosaics')
         page = result.json()
         final_list = handle_page(page, year)
         while page['_links'].get('_next') is not None:

@@ -11,7 +11,7 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 pathway = os.path.dirname(os.path.realpath(__file__))
 try:
     PL_API_KEY = find_api_key()
-    os.environ['PLANET_API_KEY'] = find_api_key()
+    os.environ['PL_API_KEY'] = find_api_key()
 except:
     print 'Failed to get Planet Key: Initialize First'
     sys.exit()
@@ -24,11 +24,11 @@ def handle_page(page,year,minx,miny,maxx,maxy):
     n = 0
     for items in page['mosaics']:
         if items['name'].startswith('global_monthly_' + str(year)):
-            print items['name']
+            #print items['name']
             with open(os.path.join(pathway, 'ids.csv'), 'a') as csvfile:
                 writer = csv.writer(csvfile, delimiter=',',
                                     lineterminator='\n')
-                writer.writerow([items['id'], minx, miny, maxx, maxy])
+                writer.writerow([items['id'],items['name'], minx, miny, maxx, maxy])
 
 
 def idl(infile, start, end):
@@ -56,8 +56,7 @@ def idl(infile, start, end):
         # # Send get request
 
             result = \
-                requests.get('https://api.planet.com/mosaic/experimental/mosaics'
-                             , auth=(PL_API_KEY, ''))
+                SESSION.get('https://api.planet.com/basemaps/v1/mosaics')
             page = result.json()
             final_list = handle_page(page,year,minx,miny,maxx,maxy)
             while page['_links'].get('_next') is not None:

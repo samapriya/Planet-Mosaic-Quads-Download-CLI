@@ -14,7 +14,7 @@ pathway = os.path.dirname(os.path.realpath(__file__))
 
 def mosaic_list_from_parser(args):
     with open(os.path.join(pathway, 'ids.csv'), 'wb') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=['id', 'minx',
+        writer = csv.DictWriter(csvfile, fieldnames=['id', 'name','minx',
                                 'miny', 'maxx', 'maxy'], delimiter=',')
         writer.writeheader()
     for filelist in os.listdir(args.local):
