@@ -55,10 +55,10 @@ def main(args=None):
     parser_download = subparsers.add_parser('download_quad',
             help='Download metadata quads')
     parser_download.add_argument('--local',
-                                 help='Choose folder with geojson files'
+                                 help='Choose folder to download images'
                                  )
     parser_download.add_argument('--coverage',
-                                 help='Choose folder with geojson files'
+                                 help='Choose minimum percentage coverage'
                                  )
     parser_download.set_defaults(func=download_mosaic_from_parser)
 
