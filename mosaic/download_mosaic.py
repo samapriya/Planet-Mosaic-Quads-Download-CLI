@@ -108,3 +108,4 @@ def download(filepath=None, coverage=None):
                 print(e)
             except (KeyboardInterrupt, SystemExit) as e:
                 print('Program escaped by User')
+                sys.exit()
