@@ -4,7 +4,7 @@ Mosaic command line
 
 ```
 mosaic -h
-usage: mosaic [-h]
+usage: pbasemap [-h]
               {mosaic_list,download_quad,download_metadata,shp2geojson} ...
 
 Planet Mosaic Quads Download CLI

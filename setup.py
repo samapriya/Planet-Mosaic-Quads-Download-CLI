@@ -17,8 +17,8 @@ def readme():
     with open('README.md') as f:
         return f.read()
 setuptools.setup(
-    name='mosaic',
-    version='0.0.2',
+    name='pbasemap',
+    version='0.0.3',
     packages=find_packages(),
     package_data={'mosaic': ['ids.csv','idmetadata.csv']},
     url='https://github.com/samapriya/Planet-Mosaic-Quads-Download-CLI',
@@ -42,7 +42,7 @@ setuptools.setup(
     description='Tool to download Planet Monthly Mosaic Quads',
     entry_points={
         'console_scripts': [
-            'mosaic=mosaic.mosaic:main',
+            'pbasemap=pbasemap.pbasemap:main',
         ],
     },
 )
