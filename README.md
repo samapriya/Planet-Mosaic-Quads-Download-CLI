@@ -3,7 +3,7 @@
 Mosaic command line
 
 ```
-mosaic -h
+pbasemap -h
 usage: pbasemap [-h]
               {mosaic_list,download_quad,download_metadata,shp2geojson} ...
 
