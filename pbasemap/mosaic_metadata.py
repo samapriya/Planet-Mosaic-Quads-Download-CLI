@@ -18,21 +18,8 @@ except:
     sys.exit()
 SESSION = requests.Session()
 SESSION.auth = (PL_API_KEY, '')
-with open(os.path.join(pathway, 'idmetadata.csv'), 'wb') as csvfile:
-    writer = csv.DictWriter(csvfile, fieldnames=[
-        'name',
-        'coordinate_system',
-        'id',
-        'first_acquired',
-        'last_acquired',
-        'quad_size',
-        'resolution',
-        'level',
-        ], delimiter=',')
-    writer.writeheader()
 
-
-def handle_page(page, year):
+def handle_page(page, year,local):
     n = 0
     for items in page['mosaics']:
         if items['name'].startswith('global_monthly_' + str(year)):
@@ -53,7 +40,7 @@ def handle_page(page, year):
             pattern = '%Y-%m-%d'
             epoch_last = int(time.mktime(time.strptime(date_time,
                              pattern))) * 1000
-            with open(os.path.join(pathway, 'idmetadata.csv'), 'a') as \
+            with open(local, 'a') as \
                 csvfile:
                 writer = csv.writer(csvfile, delimiter=',',
                                     lineterminator='\n')
@@ -68,18 +55,18 @@ def handle_page(page, year):
                     level,
                     ])
 
-def idm(start, end):
+def idm(start, end,local):
     headers = {'Content-Type': 'application/json'}
     PL_API_KEY = read_planet_json()['key']
     for year in range(int(start), int(end) + 1):
         result = \
             SESSION.get('https://api.planet.com/basemaps/v1/mosaics')
         page = result.json()
-        final_list = handle_page(page, year)
+        final_list = handle_page(page, year,local)
         while page['_links'].get('_next') is not None:
             page_url = page['_links'].get('_next')
             page = SESSION.get(page_url).json()
-            ids = handle_page(page, year)
+            ids = handle_page(page, year,local)
 
 
 # idm(start=2016,end=2018)

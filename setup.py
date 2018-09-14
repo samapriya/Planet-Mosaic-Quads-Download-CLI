@@ -18,14 +18,15 @@ def readme():
         return f.read()
 setuptools.setup(
     name='pbasemap',
-    version='0.0.3',
+    version='0.0.4',
     packages=find_packages(),
     package_data={'mosaic': ['ids.csv','idmetadata.csv']},
     url='https://github.com/samapriya/Planet-Mosaic-Quads-Download-CLI',
-    install_requires=['requests>=2.18.4','hurry.filesize>=0.9','planet>=1.1.0','psutil>=5.4.5','pyshp>=1.2.12',
-                      'pytest>=3.5.1','requests-toolbelt>=0.8.0','retrying>=1.3.3',
-                      'pypiwin32; platform_system == "Windows"','pywin32; platform_system == "Windows"'],
+    install_requires=['requests>=2.19.1','planet>=1.1.0','psutil>=5.4.5','pyshp>=1.2.12','retrying>=1.3.3',
+                      'geopandas>=0.4.0','pypiwin32; platform_system == "Windows"','pywin32; platform_system == "Windows"'],
     license='Apache 2.0',
+    long_description=open('README.md').read(),
+    long_description_content_type='text/markdown',
     classifiers=(
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',

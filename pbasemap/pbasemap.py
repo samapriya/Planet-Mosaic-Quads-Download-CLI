@@ -3,6 +3,7 @@
 import os
 import argparse
 import csv
+import sys
 from mosaic_grid import idl
 from download_mosaic import download
 from mosaic_metadata import idm
@@ -10,6 +11,7 @@ from shp2geojson import shp2gj
 from planet.api.auth import find_api_key
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 pathway = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0,pathway)
 
 
 def mosaic_list_from_parser(args):
@@ -30,8 +32,19 @@ def download_mosaic_from_parser(args):
 
 
 def download_metadata_from_parser(args):
-    idm(start=args.start, end=args.end)
-
+    with open(args.local, 'wb') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=[
+            'name',
+            'coordinate_system',
+            'id',
+            'first_acquired',
+            'last_acquired',
+            'quad_size',
+            'resolution',
+            'level',
+            ], delimiter=',')
+        writer.writeheader()
+    idm(start=args.start, end=args.end,local=args.local)
 
 def shp2gj_metadata_from_parser(args):
     shp2gj(folder=args.source, export=args.destination)
@@ -66,6 +79,7 @@ def main(args=None):
             help='Download Quad Metadata')
     parser_idm.add_argument('--start', help='Choose Start Year')
     parser_idm.add_argument('--end', help='Choose End Year')
+    parser_idm.add_argument('--local', help='Full path where you want the metadata exported')
     parser_idm.set_defaults(func=download_metadata_from_parser)
 
     parser_shp2gj = subparsers.add_parser('shp2geojson',
@@ -83,4 +97,4 @@ if __name__ == '__main__':
     main()
 
 
-			
+
