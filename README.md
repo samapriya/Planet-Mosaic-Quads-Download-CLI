@@ -1,4 +1,6 @@
 # Planet-Mosaic-Quads-Download-CLI
+[![PyPI version](https://badge.fury.io/py/pbasemap.svg)](https://badge.fury.io/py/pbasemap)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1432872.svg)](https://doi.org/10.5281/zenodo.1432872)
 
 Planet creates global monthly mosaics apart from creating mosaics at different frequencies, monthly mosaics are of interest to a lot of people who would like to do a consistent time series analysis using these mosaics and would like to apply them to an existing analytical pipeline. I created this tool to allow you pass single or multiple geometries in a folder for the tool to find the mosaic quads and then process and download it. For now the geometry is passed as a geojson file, but I have included a tool for you to convert any shapefile into geojson files so you can use this tool. In the future I will add support for kml and json files as well.
 
@@ -8,7 +10,7 @@ Planet creates global monthly mosaics apart from creating mosaics at different f
 * [pbasemap Planet Mosaic Quads Download CLI](#pbasemap-planet-mosaic-quads-download-cli)
     * [mosaic list](#mosaic-list)
     * [download mosaic](#download-mosaic)
-    * [download mosaic metadata](#download-mosiac-metadata)
+    * [download mosaic metadata](#download-mosaic-metadata)
     * [shape to geojson](#shape-to-geojson)
 
 ## Installation
