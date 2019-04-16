@@ -22,7 +22,9 @@ __license__ = "Apache 2.0"
 
 import requests
 import json
+import os
 import csv
+import time
 import sys
 import pyproj
 from datetimerange import DateTimeRange
@@ -43,7 +45,7 @@ except:
 SESSION = requests.Session()
 SESSION.auth = (PL_API_KEY, '')
 
-def handle_page(response, gmainbound,start, end,outfile):
+def handle_page(response, gmainbound,start, end):
     for items in response['mosaics']:
         bd = items['bbox']
         mosgeom = shape(Polygon(box(bd[0], bd[1], bd[2], bd[3]).exterior.coords))
@@ -66,25 +68,16 @@ def handle_page(response, gmainbound,start, end,outfile):
                     print('Mosaic name:  ' + str(items['name']))
                     print('Mosaic Resolution:  ' + str(items['grid']['resolution']))
                     print('Mosaic ID:  ' + str(items['id']))
-                    name=str(items['name'])
-                    ids=str(items['id'])
-                    facq=str(items['first_acquired']).split('T')[0]
-                    lacq=str(items['last_acquired']).split('T')[0]
-                    res=str(items['grid']['resolution'])
+                    # print(items['first_acquired'])
+                    # print(items['last_acquired'])
+                    # print(items['quad_download'])
+                    # print('AOI Geom: '+str(gmainbound))
                     print('')
-                    with open(outfile,'a') as csvfile:
-                        writer=csv.writer(csvfile,delimiter=',',lineterminator='\n')
-                        writer.writerow([name, ids, facq,lacq,format(float(res),'.3f')])
-                    csvfile.close()
 
 
-def metadata(infile,start,end,outfile):
+def idl(infile,start,end):
     headers = {'Content-Type': 'application/json'}
 
-    with open(outfile,'wb') as csvfile:
-        writer=csv.DictWriter(csvfile,fieldnames=["name", "id", "first_acquired",
-                                                  "last_acquired","resolution"], delimiter=',')
-        writer.writeheader()
 ##Parse Geometry
     try:
         if infile.endswith('.geojson'):
@@ -107,14 +100,14 @@ def metadata(infile,start,end,outfile):
     gmainbound = (','.join(str(v) for v in list(gmain.bounds)))
     r = requests.get('https://api.planet.com/basemaps/v1/mosaics', auth=(PL_API_KEY, ''))
     response = r.json()
-    final_list = handle_page(response, gmainbound, start, end,outfile)
+    final_list = handle_page(response, gmainbound, start, end)
     try:
         while response['_links'].get('_next') is not None:
             page_url = response['_links'].get('_next')
             r = requests.get(page_url)
             response = r.json()
-            idlist = handle_page(response, gmainbound, start, end,outfile)
+            idlist = handle_page(response, gmainbound, start, end)
     except Exception as e:
         print(e)
     print('rbox:' + str(gmainbound))
-# metadata(infile=r'C:\Users\samapriya\Downloads\belem.geojson',start='2018-10-02',end='2019-03-01',outfile=r'C:\planet_demo\mosmeta.csv')
+#idl(infile=r'C:\Users\samapriya\Downloads\belem.geojson',start='2019-01-02',end='2019-03-01')

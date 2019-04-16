@@ -11,6 +11,7 @@ Planet creates global monthly mosaics apart from creating mosaics at different f
     * [mosaic list](#mosaic-list)
     * [download mosaic](#download-mosaic)
     * [download mosaic metadata](#download-mosaic-metadata)
+    * [multipart download mosaic](#multipart-download-mosaic)
     * [shape to geojson](#shape-to-geojson)
 
 ## Installation
@@ -41,17 +42,17 @@ Installation is an optional step; the application can be also run directly by ex
 As usual, to print help:
 
 ```
-pbasemap -h
 usage: pbasemap [-h]
-              {mosaic_list,download_quad,download_metadata,shp2geojson} ...
+                {mosaic_list,download,mpdownload,metadata,shp2geojson} ...
 
 Planet Mosaic Quads Download CLI
 
 positional arguments:
-  {mosaic_list,download_quad,download_metadata,shp2geojson}
+  {mosaic_list,download,mpdownload,metadata,shp2geojson}
     mosaic_list         Tool to get Mosaic & Bounding Box list
-    download_quad       Download quad GeoTiffs
-    download_metadata   Download Quad Metadata
+    download            Download quad GeoTiffs
+    mpdownload          Download quad GeoTiffs using multipart downloader
+    metadata            Download Quad Metadata
     shp2geojson         Convert all shapefiles in folder to GeoJSON
 
 optional arguments:
@@ -60,45 +61,71 @@ optional arguments:
 
 To obtain help for a specific functionality, simply call it with _help_ switch, e.g.: `pbasemap zipshape -h`. If you didn't install pbasemap, then you can run it just by going to *pbasemap* directory and running `python pbasemap.py [arguments go here]`
 
-## pbasemap Simple CLI for Earth Engine Uploads
-The tool allows you to mass both single and multiple geometries and processes mosaics within a yearly range. Meaning it will download all monthly mosaics within a year. A finer control will not be implemented since this is designed to be part of a larger yearly assessment toolchain. But a user can go into the idl.csv file created by the tool and remove the rows with the mosaics they do not want to be downloaded.
+## pbasemap Simple CLI for Basemaps API
+The tool allows you to list and download basemap quads that instersect with area of interest, and have controls such as date range and check for final coverage before download. The CLI also allows you to export the mosaics list as needed and can handle GeoJSON and KML files, and includes a tool to convert shapefiles to GeoJSON files for use with this tool.
 
 ### mosaic list
-This tool allows you to pass a folder with geojson geometries for which you want the mosaic quads to be downloaded. It then creates an internal list to be used by the downloader to then download your mosaic quads.
+This tool allows you to pass a input geometry such as a GeoJSON or a KML file along with the start and end dates. It prints out the mosaic name, id and resolution. It prints out these information on the screen and the id could then be used to download the geotiffs.
 
 ```
-usage: pbasemap mosaic_list [-h] [--local LOCAL] [--start START] [--end END]
-
-optional arguments:
-  -h, --help     show this help message and exit
-  --local LOCAL  Choose folder with geojson files
-  --start START  Choose Start Year
-  --end END      Choose End Year
-```
-
-### download mosaic
-As the name suggests this downloads your mosaic to the local folder you specify, you can specify how much coverage you want over your geometry and over the quad. So you may decide to only download those mosaic quads that have coverage more than 90% by simply specifying ```--coverage "90"``` in the arguments.
-
-```
-usage: pbasemap download_quad [-h] [--local LOCAL] [--coverage COVERAGE]
+usage: pbasemap mosaic_list [-h] [--geometry GEOMETRY] [--start START]
+                            [--end END]
 
 optional arguments:
   -h, --help           show this help message and exit
-  --local LOCAL        Choose folder to download images
+  --geometry GEOMETRY  Choose a geometry file supports GeoJSON, KML
+  --start START        Choose Start date in format YYYY-MM-DD
+  --end END            Choose End date in format YYYY-MM-DD
+```
+
+### download mosaic
+As the name suggests this downloads your mosaic to the local folder you specify, you can specify how much coverage you want over your geometry and over the quad. So you may decide to only download those mosaic quads that have coverage more than 90% by simply specifying ```--coverage 90``` in the arguments.
+
+```
+usage: pbasemap download [-h] [--id ID] [--geometry GEOMETRY] [--local LOCAL]
+                         [--coverage COVERAGE]
+
+optional arguments:
+  -h, --help           show this help message and exit
+  --id ID              Mosaic ID from earlier search
+  --geometry GEOMETRY  Choose a geometry file supports GeoJSON, KML
+  --local LOCAL        Local folder to download images
+
+Optional named arguments:
+  --coverage COVERAGE  Choose minimum percentage coverage
+```
+
+### multipart download mosaic
+This uses a multipart downloader to download your mosaic to the local folder you specify, you can specify how much coverage you want over your geometry and over the quad. So you may decide to only download those mosaic quads that have coverage more than 90% by simply specifying ```--coverage 90``` in the arguments.
+
+```
+usage: pbasemap mpdownload [-h] [--id ID] [--geometry GEOMETRY]
+                           [--local LOCAL] [--coverage COVERAGE]
+
+optional arguments:
+  -h, --help           show this help message and exit
+  --id ID              Mosaic ID from earlier search
+  --geometry GEOMETRY  Choose a geometry file supports GeoJSON, KML
+  --local LOCAL        Local folder to download images
+
+Optional named arguments:
   --coverage COVERAGE  Choose minimum percentage coverage
 ```
 
 ### download mosaic metadata
-Though typically the mosaic quads don't come with metadata, I decided to create metadata using the json response and some of the custom fields I though would be useful and this tool allows you to download that. This does not require geometry and exports only the global
+Though typically the mosaic quads don't come with metadata, I decided to create metadata using the json response and some of the custom fields I though would be useful and this tool allows you to download that.
 
 ```
-usage: pbasemap download_metadata [-h] [--start START] [--end END]
+usage: pbasemap metadata [-h] [--geometry GEOMETRY] [--start START]
+                         [--end END] [--output OUTPUT]
 
 optional arguments:
-  -h, --help     show this help message and exit
-  --start START  Choose Start Year
-  --end END      Choose End Year
-  --local LOCAL  Full path where you want the metadata exported
+  -h, --help           show this help message and exit
+  --geometry GEOMETRY  Choose a geometry file supports GeoJSON, KML
+  --start START        Choose Start date in format YYYY-MM-DD
+  --end END            Choose End date in format YYYY-MM-DD
+  --output OUTPUT      Full path where you want the metadata exported
+
 ```
 
 ### shape to geojson
@@ -115,6 +142,12 @@ optional arguments:
 ```
 
 ## Changelog
+
+### v0.0.5
+
+- Complete change to the codebase and underlying methodology
+- Optimized code for search and download
+- Overall improvements to code and major revisions
 
 ### v0.0.4
 
