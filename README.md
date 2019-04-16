@@ -24,6 +24,8 @@ Zenodo. http://doi.org/10.5281/zenodo.2641691
     * [shape to geojson](#shape-to-geojson)
 
 ## Installation
+** Install Fiona and GDAL for windows using the whl files [here](https://www.lfd.uci.edu/~gohlke/pythonlibs/)** if there are any issues during installation.
+
 This assumes that you have native python & pip installed in your system, you can test this by going to the terminal (or windows command prompt) and trying
 
 ```python``` and then ```pip list```
