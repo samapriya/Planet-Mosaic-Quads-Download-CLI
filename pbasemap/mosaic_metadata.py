@@ -81,7 +81,7 @@ def handle_page(response, gmainbound,start, end,outfile):
 def metadata(infile,start,end,outfile):
     headers = {'Content-Type': 'application/json'}
 
-    with open(outfile,'wb') as csvfile:
+    with open(outfile,'w') as csvfile:
         writer=csv.DictWriter(csvfile,fieldnames=["name", "id", "first_acquired",
                                                   "last_acquired","resolution"], delimiter=',')
         writer.writeheader()
