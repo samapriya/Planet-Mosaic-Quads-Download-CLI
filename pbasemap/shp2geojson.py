@@ -15,6 +15,6 @@ def shp2gj(folder, export):
                 data_proj['geometry'] = data_proj['geometry'].to_crs(epsg=4326)
                 data_proj.to_file(os.path.join(export,str(items).replace('.shp', '.geojson')), driver="GeoJSON")
                 print('Export completed to '+str(os.path.join(export,str(items).replace('.shp', '.geojson'))))
-            except Exception, e:
-                print e
+            except Exception as e:
+                print(e)
 #shp2gj(folder=r"C:\Users\samapriya\Downloads\nexgengrid",export=r"C:\planet_demo")
