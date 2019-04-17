@@ -4,6 +4,7 @@ import requests
 import json
 import os
 import sys
+import csv
 from pySmartDL import SmartDL
 from shapely.geometry import shape
 from planet.api.auth import find_api_key
@@ -23,12 +24,49 @@ SESSION = requests.Session()
 SESSION.auth = (PL_API_KEY, '')
 CAS_URL = 'https://api.planet.com/mosaic/experimental/mosaics/'
 
+# Function to download the geotiffs
+def multipart(ids,names, idlist, infile, coverage, local):
+    if idlist is None and names is not None:
+        pydownload(ids,names, infile, coverage, local)
+    elif idlist is not None:
+        with open(idlist) as csvfile:
+            reader=csv.DictReader(csvfile)
+            for row in reader:
+                print('')
+                print('Processing: '+str(row['name']))
+                pydownload(str(row['id']),str(row['name']),infile, coverage, local)
+
+# Get item id from item name
+def handle_page(names,response):
+    for items in response['mosaics']:
+        if items['name']==names:
+            return items['id']
+
 
 # Function to download the geotiffs
-def pydownload(ids, infile,coverage,local):
+def pydownload(ids,names, infile, coverage, local):
+    if names is None and ids is not None:
+        ids=ids
+    elif names is not None and ids is None:
+        resp=SESSION.get('https://api.planet.com/basemaps/v1/mosaics')
+        response=resp.json()
+        ids=handle_page(names,response)
+        idmatch.append(ids)
+        try:
+            while response['_links'].get('_next') is not None:
+                page_url = response['_links'].get('_next')
+                r = requests.get(page_url)
+                response = r.json()
+                ids = handle_page(names,response)
+                idmatch.append(ids)
+        except Exception as e:
+            print(e)
+        for ival in idmatch:
+            if ival is not None:
+                ids=ival
+    elif names is not None and ids is not None:
+        ids = ids
     headers = {'Content-Type': 'application/json'}
-
-##Parse Geometry
     try:
         if infile.endswith('.geojson'):
             with open(infile) as aoi:
@@ -60,15 +98,19 @@ def pydownload(ids, infile,coverage,local):
             for itemlist in resp['items']:
                 if coverage is not None and int(itemlist['percent_covered']) >= int(coverage):
                     downlink = itemlist['_links']['download']
-                    r = requests.get(downlink,allow_redirects=False, timeout=0.5)
-                    filelink=r.headers['Location']
-                    filename=str(r.headers['Location']).split('%22')[-2]
-                    localpath=os.path.join(local,filename)
+                    r = requests.get(downlink,allow_redirects=False)
+                    filelink = r.headers['Location']
+                    filename = str(r.headers['Location']).split('%22')[-2]
+                    localpath = os.path.join(local, names+'_'+filename)
+                    result = SESSION.get(filelink)
+                    if not os.path.exists(localpath) and result.status_code == 200:
+                        print("Downloading: " + str(localpath))
+                        f = open(localpath, 'wb')
                     #print(filename)
                     result = SESSION.get(filelink)
                     if not os.path.exists(localpath) and result.status_code == 200:
                         print("Downloading: " + str(localpath))
-                        obj = SmartDL(filelink, localpath)
+                        obj = SmartDL(filelink, names+'_'+localpath)
                         obj.start()
                         path = obj.get_dest()
                     else:
@@ -78,10 +120,10 @@ def pydownload(ids, infile,coverage,local):
                             print("File already exists SKIPPING: " + str(localpath))
                 elif coverage is None:
                     downlink = itemlist['_links']['download']
-                    r = requests.get(downlink,allow_redirects=False, timeout=0.5)
+                    r = requests.get(downlink,allow_redirects=False)
                     filelink=r.headers['Location']
                     filename=str(r.headers['Location']).split('%22')[-2]
-                    localpath=os.path.join(local,filename)
+                    localpath=os.path.join(local,names+'_'+filename)
                     #print(filename)
                     result = SESSION.get(filelink)
                     if not os.path.exists(localpath) and result.status_code == 200:

@@ -18,7 +18,7 @@ def readme():
         return f.read()
 setuptools.setup(
     name='pbasemap',
-    version='0.0.6',
+    version='0.0.7',
     packages=find_packages(),
     package_data={'mosaic': ['ids.csv','idmetadata.csv']},
     url='https://github.com/samapriya/Planet-Mosaic-Quads-Download-CLI',

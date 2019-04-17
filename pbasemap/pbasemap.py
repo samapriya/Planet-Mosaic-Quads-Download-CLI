@@ -25,7 +25,7 @@ import csv
 import sys
 from geom_rbox import idl
 from mos_download import download
-from mos_pydl import pydownload
+from mos_pydl import multipart
 from shp2geojson import shp2gj
 from mosaic_metadata import metadata
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
@@ -33,17 +33,20 @@ pathway = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(pathway)
 
 
+def rbox_from_parser(args):
+    idl(infile=args.geometry)
+
+
 def mosaic_list_from_parser(args):
-    idl(infile=args.geometry,start=args.start, end=args.end)
+    metadata(infile=args.geometry, start=args.start,end=args.end,outfile=args.output)
+
 
 def download_mosaic_from_parser(args):
-    download(ids=args.id, infile=args.geometry,coverage=args.coverage,local=args.local)
+    download(names=args.name, ids=None, idlist=args.idlist,infile=args.geometry,coverage=args.coverage,local=args.local)
 
 def multipart_mosaic_from_parser(args):
-    pydownload(ids=args.id, infile=args.geometry,coverage=args.coverage,local=args.local)
+    multipart(names=args.name, ids=None, idlist=args.idlist,infile=args.geometry,coverage=args.coverage,local=args.local)
 
-def metadata_from_parser(args):
-    metadata(infile=args.geometry, start=args.start,end=args.end,outfile=args.output)
 
 def shp2gj_metadata_from_parser(args):
     shp2gj(folder=args.source, export=args.destination)
@@ -57,38 +60,40 @@ def main(args=None):
 
     subparsers = parser.add_subparsers()
 
-    parser_idl = subparsers.add_parser('mosaic_list',
-            help='Tool to get Mosaic & Bounding Box list')
-    parser_idl.add_argument('--geometry',
+    parser_rbox = subparsers.add_parser('rbox',
+            help='Prints bounding box for geometry')
+    parser_rbox.add_argument('--geometry',
                             help='Choose a geometry file supports GeoJSON, KML')
-    parser_idl.add_argument('--start', help='Choose Start date in format YYYY-MM-DD')
-    parser_idl.add_argument('--end', help='Choose End date in format YYYY-MM-DD')
-    parser_idl.set_defaults(func=mosaic_list_from_parser)
+    parser_rbox.set_defaults(func=rbox_from_parser)
 
-    parser_download = subparsers.add_parser('download',help='Download quad GeoTiffs')
-    parser_download.add_argument('--id', help='Mosaic ID from earlier search')
+    parser_mosaic_list = subparsers.add_parser('mosaic_list',
+            help='Tool to get Mosaic & Bounding Box list')
+    parser_mosaic_list.add_argument('--geometry',
+                            help='Choose a geometry file supports GeoJSON, KML')
+    parser_mosaic_list.add_argument('--start', help='Choose Start date in format YYYY-MM-DD')
+    parser_mosaic_list.add_argument('--end', help='Choose End date in format YYYY-MM-DD')
+    parser_mosaic_list.add_argument('--output', help='Full path where you want your mosaic list exported')
+    parser_mosaic_list.set_defaults(func=mosaic_list_from_parser)
+
+    parser_download = subparsers.add_parser('download',help='Download quad GeoTiffs choose from name or idlist')
     parser_download.add_argument('--geometry',
                             help='Choose a geometry file supports GeoJSON, KML')
     parser_download.add_argument('--local', help='Local folder to download images')
     optional_named = parser_download.add_argument_group('Optional named arguments')
     optional_named.add_argument('--coverage', help="Choose minimum percentage coverage", default=None)
+    optional_named.add_argument('--name', help='Mosaic name from earlier search or csvfile', default=None)
+    optional_named.add_argument('--idlist', help="Mosaic list csvfile", default=None)
     parser_download.set_defaults(func=download_mosaic_from_parser)
 
     parser_multipart_mosaic = subparsers.add_parser('mpdownload',help='Download quad GeoTiffs using multipart downloader')
-    parser_multipart_mosaic.add_argument('--id', help='Mosaic ID from earlier search')
     parser_multipart_mosaic.add_argument('--geometry',
                             help='Choose a geometry file supports GeoJSON, KML')
     parser_multipart_mosaic.add_argument('--local', help='Local folder to download images')
     optional_named = parser_multipart_mosaic.add_argument_group('Optional named arguments')
     optional_named.add_argument('--coverage', help="Choose minimum percentage coverage", default=None)
+    optional_named.add_argument('--name', help='Mosaic name from earlier search or csvfile', default=None)
+    optional_named.add_argument('--idlist', help="Mosaic list csvfile", default=None)
     parser_multipart_mosaic.set_defaults(func=multipart_mosaic_from_parser)
-
-    parser_metadata = subparsers.add_parser('metadata',help='Download Quad Metadata')
-    parser_metadata.add_argument('--geometry',help='Choose a geometry file supports GeoJSON, KML')
-    parser_metadata.add_argument('--start', help='Choose Start date in format YYYY-MM-DD')
-    parser_metadata.add_argument('--end', help='Choose End date in format YYYY-MM-DD')
-    parser_metadata.add_argument('--output', help='Full path where you want the metadata exported')
-    parser_metadata.set_defaults(func=metadata_from_parser)
 
     parser_shp2gj = subparsers.add_parser('shp2geojson',help='Convert all shapefiles in folder to GeoJSON')
     parser_shp2gj.add_argument('--source', help='Choose Source Folder')

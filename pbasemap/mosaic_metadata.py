@@ -105,6 +105,7 @@ def metadata(infile,start,end,outfile):
     temp['coordinates'] = aoi_geom
     gmain = shape(temp)
     gmainbound = (','.join(str(v) for v in list(gmain.bounds)))
+    print('rbox:' + str(gmainbound)+'\n')
     r = requests.get('https://api.planet.com/basemaps/v1/mosaics', auth=(PL_API_KEY, ''))
     response = r.json()
     final_list = handle_page(response, gmainbound, start, end,outfile)
@@ -116,5 +117,8 @@ def metadata(infile,start,end,outfile):
             idlist = handle_page(response, gmainbound, start, end,outfile)
     except Exception as e:
         print(e)
+    except (KeyboardInterrupt, SystemExit) as e:
+        print('Program escaped by User')
+        sys.exit()
     print('rbox:' + str(gmainbound))
 # metadata(infile=r'C:\Users\samapriya\Downloads\belem.geojson',start='2018-10-02',end='2019-03-01',outfile=r'C:\planet_demo\mosmeta.csv')

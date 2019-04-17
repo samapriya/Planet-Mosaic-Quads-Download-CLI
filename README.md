@@ -17,6 +17,7 @@ Zenodo. http://doi.org/10.5281/zenodo.2641691
 * [Installation](#installation)
 * [Getting started](#getting-started)
 * [pbasemap Planet Mosaic Quads Download CLI](#pbasemap-planet-mosaic-quads-download-cli)
+    * [bounding box](#bounding-box)
     * [mosaic list](#mosaic-list)
     * [download mosaic](#download-mosaic)
     * [download mosaic metadata](#download-mosaic-metadata)
@@ -24,7 +25,7 @@ Zenodo. http://doi.org/10.5281/zenodo.2641691
     * [shape to geojson](#shape-to-geojson)
 
 ## Installation
-**Install Fiona and GDAL for windows using the whl files [here](https://www.lfd.uci.edu/~gohlke/pythonlibs/)** if there are any issues during installation.
+** Install Fiona and GDAL for windows using the whl files [here](https://www.lfd.uci.edu/~gohlke/pythonlibs/)** if there are any issues during installation.
 
 This assumes that you have native python & pip installed in your system, you can test this by going to the terminal (or windows command prompt) and trying
 
@@ -53,17 +54,16 @@ Installation is an optional step; the application can be also run directly by ex
 As usual, to print help:
 
 ```
-usage: pbasemap [-h]
-                {mosaic_list,download,mpdownload,metadata,shp2geojson} ...
+usage: pbasemap.py [-h] {rbox,mosaic_list,download,mpdownload,shp2geojson} ...
 
 Planet Mosaic Quads Download CLI
 
 positional arguments:
-  {mosaic_list,download,mpdownload,metadata,shp2geojson}
+  {rbox,mosaic_list,download,mpdownload,shp2geojson}
+    rbox                Prints bounding box for geometry
     mosaic_list         Tool to get Mosaic & Bounding Box list
-    download            Download quad GeoTiffs
+    download            Download quad GeoTiffs choose from name or idlist
     mpdownload          Download quad GeoTiffs using multipart downloader
-    metadata            Download Quad Metadata
     shp2geojson         Convert all shapefiles in folder to GeoJSON
 
 optional arguments:
@@ -75,68 +75,69 @@ To obtain help for a specific functionality, simply call it with _help_ switch, 
 ## pbasemap Simple CLI for Basemaps API
 The tool allows you to list and download basemap quads that instersect with area of interest, and have controls such as date range and check for final coverage before download. The CLI also allows you to export the mosaics list as needed and can handle GeoJSON and KML files, and includes a tool to convert shapefiles to GeoJSON files for use with this tool.
 
-### mosaic list
-This tool allows you to pass a input geometry such as a GeoJSON or a KML file along with the start and end dates. It prints out the mosaic name, id and resolution. It prints out these information on the screen and the id could then be used to download the geotiffs.
+### bounding box
+This tool simply prints the bounding box for any geometry feature that is passed. This is useful if you are using the planet CLI to downlaod quads which requires a bounding box.It prints out the bounding box for use.
 
 ```
-usage: pbasemap mosaic_list [-h] [--geometry GEOMETRY] [--start START]
-                            [--end END]
+usage: pbasemap.py rbox [-h] [--geometry GEOMETRY]
+
+optional arguments:
+  -h, --help           show this help message and exit
+  --geometry GEOMETRY  Choose a geometry file supports GeoJSON, KML
+
+```
+
+### mosaic list
+This tool exports the mosaics name, id that intersect with your bounding box for your geometry. This can then be used to download the quads.
+
+```
+usage: pbasemap.py mosaic_list [-h] [--geometry GEOMETRY] [--start START]
+                               [--end END] [--output OUTPUT]
 
 optional arguments:
   -h, --help           show this help message and exit
   --geometry GEOMETRY  Choose a geometry file supports GeoJSON, KML
   --start START        Choose Start date in format YYYY-MM-DD
   --end END            Choose End date in format YYYY-MM-DD
+  --output OUTPUT      Full path where you want your mosaic list exported
 ```
 
 ### download mosaic
-As the name suggests this downloads your mosaic to the local folder you specify, you can specify how much coverage you want over your geometry and over the quad. So you may decide to only download those mosaic quads that have coverage more than 90% by simply specifying ```--coverage 90``` in the arguments.
+As the name suggests this downloads your mosaic to the local folder you specify, you can specify how much coverage you want over your geometry and over the quad. So you may decide to only download those mosaic quads that have coverage more than 90% by simply specifying ```--coverage 90``` in the arguments. Once you create the list of mosaics that intersect with your geometry, you should be able to use the idlist option to export them all. Since L15 qauds can have the same name, the name of the mosaic is prepended to the filename.
 
 ```
-usage: pbasemap download [-h] [--id ID] [--geometry GEOMETRY] [--local LOCAL]
-                         [--coverage COVERAGE]
+usage: pbasemap.py download [-h] [--geometry GEOMETRY] [--local LOCAL]
+                            [--coverage COVERAGE] [--name NAME]
+                            [--idlist IDLIST]
 
 optional arguments:
   -h, --help           show this help message and exit
-  --id ID              Mosaic ID from earlier search
   --geometry GEOMETRY  Choose a geometry file supports GeoJSON, KML
   --local LOCAL        Local folder to download images
 
 Optional named arguments:
   --coverage COVERAGE  Choose minimum percentage coverage
+  --name NAME          Mosaic name from earlier search or csvfile
+  --idlist IDLIST      Mosaic list csvfile
 ```
 
 ### multipart download mosaic
-This uses a multipart downloader to download your mosaic to the local folder you specify, you can specify how much coverage you want over your geometry and over the quad. So you may decide to only download those mosaic quads that have coverage more than 90% by simply specifying ```--coverage 90``` in the arguments.
+This uses a multipart downloader to download your mosaic to the local folder you specify, you can specify how much coverage you want over your geometry and over the quad. So you may decide to only download those mosaic quads that have coverage more than 90% by simply specifying ```--coverage 90``` in the arguments.Once you create the list of mosaics that intersect with your geometry, you should be able to use the idlist option to export them all. Since L15 qauds can have the same name, the name of the mosaic is prepended to the filename.
 
 ```
-usage: pbasemap mpdownload [-h] [--id ID] [--geometry GEOMETRY]
-                           [--local LOCAL] [--coverage COVERAGE]
+usage: pbasemap.py mpdownload [-h] [--geometry GEOMETRY] [--local LOCAL]
+                              [--coverage COVERAGE] [--name NAME]
+                              [--idlist IDLIST]
 
 optional arguments:
   -h, --help           show this help message and exit
-  --id ID              Mosaic ID from earlier search
   --geometry GEOMETRY  Choose a geometry file supports GeoJSON, KML
   --local LOCAL        Local folder to download images
 
 Optional named arguments:
   --coverage COVERAGE  Choose minimum percentage coverage
-```
-
-### download mosaic metadata
-Though typically the mosaic quads don't come with metadata, I decided to create metadata using the json response and some of the custom fields I though would be useful and this tool allows you to download that.
-
-```
-usage: pbasemap metadata [-h] [--geometry GEOMETRY] [--start START]
-                         [--end END] [--output OUTPUT]
-
-optional arguments:
-  -h, --help           show this help message and exit
-  --geometry GEOMETRY  Choose a geometry file supports GeoJSON, KML
-  --start START        Choose Start date in format YYYY-MM-DD
-  --end END            Choose End date in format YYYY-MM-DD
-  --output OUTPUT      Full path where you want the metadata exported
-
+  --name NAME          Mosaic name from earlier search or csvfile
+  --idlist IDLIST      Mosaic list csvfile
 ```
 
 ### shape to geojson
@@ -153,6 +154,12 @@ optional arguments:
 ```
 
 ## Changelog
+
+### v0.0.7
+
+- Updated feedback, major changes to the codebase and underlying methodology
+- Optimized code for search and download
+- Overall improvements to code and major revisions
 
 ### v0.0.5
 

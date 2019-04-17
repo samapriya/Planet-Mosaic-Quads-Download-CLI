@@ -20,64 +20,15 @@ __license__ = "Apache 2.0"
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import requests
 import json
-import os
-import csv
-import time
 import sys
-import pyproj
-from datetimerange import DateTimeRange
-from functools import partial
 from shapely.geometry import shape
-from shapely.geometry import Polygon
-from shapely.ops import transform
 from shapely.geometry import box
-from planet.api.auth import find_api_key
 
 #Create an empty geojson template
 temp={"coordinates":[],"type":"Polygon"}
-try:
-    PL_API_KEY = find_api_key()
-except:
-    print('Failed to get Planet Key')
-    sys.exit()
-SESSION = requests.Session()
-SESSION.auth = (PL_API_KEY, '')
 
-def handle_page(response, gmainbound,start, end):
-    for items in response['mosaics']:
-        bd = items['bbox']
-        mosgeom = shape(Polygon(box(bd[0], bd[1], bd[2], bd[3]).exterior.coords))
-        gboundlist = gmainbound.split(',')
-        boundgeom = shape(Polygon(box(float(gboundlist[0]), float(gboundlist[1]), float(gboundlist[2]), float(gboundlist[3]))))
-        proj = partial(pyproj.transform, pyproj.Proj(init='epsg:4326'), pyproj.Proj(init='epsg:3857'))
-        boundgeom = transform(proj, boundgeom)
-        mosgeom = transform(proj, mosgeom)
-        if boundgeom.intersection(mosgeom).is_empty:
-            pass
-        else:
-            id = items['id']
-            r = requests.get('https://api.planet.com/mosaic/experimental/mosaics/' + str(id) + '/quads?bbox=' + str(gboundlist[0])+'%2C'+gboundlist[1]+'%2C'+gboundlist[2]+'%2C'+gboundlist[3],auth=(PL_API_KEY,''))
-            resp = r.json()
-            if len(resp['items']) > 0:
-                time_range = DateTimeRange(items['first_acquired'].split('T')[0], items['last_acquired'].split('T')[0])
-                x = DateTimeRange(start, end)
-                if time_range.is_intersection(x) is True:
-                    #print(boundgeom.intersection(mosgeom).area/1000000)
-                    print('Mosaic name:  ' + str(items['name']))
-                    print('Mosaic Resolution:  ' + str(items['grid']['resolution']))
-                    print('Mosaic ID:  ' + str(items['id']))
-                    # print(items['first_acquired'])
-                    # print(items['last_acquired'])
-                    # print(items['quad_download'])
-                    # print('AOI Geom: '+str(gmainbound))
-                    print('')
-
-
-def idl(infile,start,end):
-    headers = {'Content-Type': 'application/json'}
-
+def idl(infile):
 ##Parse Geometry
     try:
         if infile.endswith('.geojson'):
@@ -94,20 +45,13 @@ def idl(infile,start,end):
     except Exception as e:
         print('Could not parse geometry')
         print(e)
-
+    except (KeyboardInterrupt, SystemExit) as e:
+        print('Program escaped by User')
+        sys.exit()
     temp['coordinates'] = aoi_geom
     gmain = shape(temp)
     gmainbound = (','.join(str(v) for v in list(gmain.bounds)))
-    r = requests.get('https://api.planet.com/basemaps/v1/mosaics', auth=(PL_API_KEY, ''))
-    response = r.json()
-    final_list = handle_page(response, gmainbound, start, end)
-    try:
-        while response['_links'].get('_next') is not None:
-            page_url = response['_links'].get('_next')
-            r = requests.get(page_url)
-            response = r.json()
-            idlist = handle_page(response, gmainbound, start, end)
-    except Exception as e:
-        print(e)
-    print('rbox:' + str(gmainbound))
-#idl(infile=r'C:\Users\samapriya\Downloads\belem.geojson',start='2019-01-02',end='2019-03-01')
+    print('')
+    print('rbox:')
+    print(str(gmainbound))
+#idl(infile=r'C:\Users\samapriya\Downloads\belem.geojson')
