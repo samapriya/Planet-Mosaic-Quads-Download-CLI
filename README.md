@@ -69,7 +69,7 @@ optional arguments:
   -h, --help            show this help message and exit
   ```
 
-To obtain help for a specific functionality, simply call it with _help_ switch, e.g.: `pbasemap zipshape -h`. If you didn't install pbasemap, then you can run it just by going to *pbasemap* directory and running `python pbasemap.py [arguments go here]`
+To obtain help for a specific functionality, simply call it with _help_ switch, e.g.: `pbasemap shp2geojson -h`. If you didn't install pbasemap, then you can run it just by going to *pbasemap* directory and running `python pbasemap.py [arguments go here]`
 
 ## pbasemap Simple CLI for Basemaps API
 The tool allows you to list and download basemap quads that instersect with area of interest, and have controls such as date range and check for final coverage before download. The CLI also allows you to export the mosaics list as needed and can handle GeoJSON and KML files, and includes a tool to convert shapefiles to GeoJSON files for use with this tool.
