@@ -154,6 +154,11 @@ optional arguments:
 
 ## Changelog
 
+### v0.0.8
+
+- Minor improvements
+- Checks for download permission
+
 ### v0.0.7
 
 - Updated feedback, major changes to the codebase and underlying methodology

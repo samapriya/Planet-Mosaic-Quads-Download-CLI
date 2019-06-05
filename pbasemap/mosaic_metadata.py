@@ -108,17 +108,25 @@ def metadata(infile,start,end,outfile):
     print('rbox:' + str(gmainbound)+'\n')
     r = requests.get('https://api.planet.com/basemaps/v1/mosaics', auth=(PL_API_KEY, ''))
     response = r.json()
-    final_list = handle_page(response, gmainbound, start, end,outfile)
+    try:
+        if response['mosaics'][0]['quad_download'] ==True:
+            final_list = handle_page(response, gmainbound, start, end,outfile)
+    except KeyError:
+        print('No Download permission for: '+str(response['mosaics'][0]['name']))
     try:
         while response['_links'].get('_next') is not None:
             page_url = response['_links'].get('_next')
             r = requests.get(page_url)
             response = r.json()
-            idlist = handle_page(response, gmainbound, start, end,outfile)
+            try:
+                if response['mosaics'][0]['quad_download'] ==True:
+                    final_list = handle_page(response, gmainbound, start, end,outfile)
+            except KeyError:
+                print('No Download permission for: '+str(response['mosaics'][0]['name']))
     except Exception as e:
         print(e)
     except (KeyboardInterrupt, SystemExit) as e:
         print('Program escaped by User')
         sys.exit()
-    print('rbox:' + str(gmainbound))
+    #print('rbox:' + str(gmainbound))
 # metadata(infile=r'C:\Users\samapriya\Downloads\belem.geojson',start='2018-10-02',end='2019-03-01',outfile=r'C:\planet_demo\mosmeta.csv')
