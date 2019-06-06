@@ -1,6 +1,5 @@
 planet>=1.2.1
 psutil>=5.4.5
-pyshp>=1.2.12
 geopandas>=0.4.0
 requests>=2.19.1
 planet>=1.1.0
