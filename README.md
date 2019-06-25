@@ -1,14 +1,14 @@
 # Planet-Mosaic-Quads-Download-CLI
 [![PyPI version](https://badge.fury.io/py/pbasemap.svg)](https://badge.fury.io/py/pbasemap)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2643056.svg)](https://doi.org/10.5281/zenodo.2643056)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3255274.svg)](https://doi.org/10.5281/zenodo.3255274)
 
 Planet creates global monthly mosaics apart from creating mosaics at different frequencies, monthly mosaics are of interest to a lot of people who would like to do a consistent time series analysis using these mosaics and would like to apply them to an existing analytical pipeline. I created this tool to allow you pass single or multiple geometries in a folder for the tool to find the mosaic quads and then process and download it. For now the geometry is passed as a geojson file, but I have included a tool for you to convert any shapefile into geojson files so you can use this tool. In the future I will add support for kml and json files as well.
 
-You can cite the tool using the following or from [this link](https://zenodo.org/record/2641691)
+You can cite the tool using the following or from [this link](https://zenodo.org/record/3255274)
 
 ```
-Samapriya Roy. (2019, April 17). samapriya/Planet-Mosaic-Quads-Download-CLI: Planet Mosaic Quads Download CLI (Version 0.0.7). Zenodo.
-http://doi.org/10.5281/zenodo.2643056
+Samapriya Roy. (2019, June 25). samapriya/Planet-Mosaic-Quads-Download-CLI: Planet Mosaic Quads Download CLI (Version 0.1.0). Zenodo.
+http://doi.org/10.5281/zenodo.3255274
 ```
 
 
