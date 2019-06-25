@@ -12,6 +12,8 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 planethome = os.path.dirname(os.path.realpath(__file__))
 
 
+idmatch=[]
+
 # Create an empty geojson template
 temp = {"coordinates":[], "type":"Polygon"}
 try:
@@ -24,17 +26,61 @@ SESSION = requests.Session()
 SESSION.auth = (PL_API_KEY, '')
 CAS_URL = 'https://api.planet.com/mosaic/experimental/mosaics/'
 
+
 # Function to download the geotiffs
 def multipart(ids,names, idlist, infile, coverage, local):
     if idlist is None and names is not None:
-        pydownload(ids,names, infile, coverage, local)
+        downloader(ids,names, infile, coverage, local)
     elif idlist is not None:
         with open(idlist) as csvfile:
             reader=csv.DictReader(csvfile)
             for row in reader:
                 print('')
                 print('Processing: '+str(row['name']))
-                pydownload(str(row['id']),str(row['name']),infile, coverage, local)
+                downloader(str(row['id']),str(row['name']),infile, coverage, local)
+
+#Check running orders
+def hpage(page,names,coverage, local):
+    try:
+        for things in page['items']:
+            downlink=(things['_links']['download'])
+            if coverage is not None and int(things['percent_covered']) >= int(coverage):
+                r = requests.get(downlink,allow_redirects=False)
+                filelink = r.headers['Location']
+                filename = str(r.headers['Location']).split('%22')[-2]
+                fpath=os.path.join(local,names)
+                if not os.path.exists(fpath):
+                    os.makedirs(fpath)
+                localpath = os.path.join(fpath,filename)
+                if not os.path.exists(localpath):
+                    print("Downloading: " + str(localpath))
+                    obj = SmartDL(filelink, localpath)
+                    obj.start()
+                    path = obj.get_dest()
+                else:
+                    print("File already exists SKIPPING: " + str(localpath))
+            elif coverage is None:
+                downlink = things['_links']['download']
+                r = requests.get(downlink,allow_redirects=False)
+                filelink=r.headers['Location']
+                filename=str(r.headers['Location']).split('%22')[-2]
+                fpath=os.path.join(local,names)
+                if not os.path.exists(fpath):
+                    os.makedirs(fpath)
+                localpath = os.path.join(fpath,filename)
+                if not os.path.exists(localpath):
+                    print("Downloading: " + str(localpath))
+                    obj = SmartDL(filelink, localpath)
+                    obj.start()
+                    path = obj.get_dest()
+                else:
+                    print("File already exists SKIPPING: " + str(localpath))
+    except Exception as e:
+        print(e)
+    except (KeyboardInterrupt, SystemExit) as e:
+        print('Program escaped by User')
+        sys.exit()
+
 
 # Get item id from item name
 def handle_page(names,response):
@@ -42,9 +88,8 @@ def handle_page(names,response):
         if items['name']==names:
             return items['id']
 
-
-# Function to download the geotiffs
-def pydownload(ids,names, infile, coverage, local):
+# Downloader
+def downloader(ids,names, infile, coverage, local):
     if names is None and ids is not None:
         ids=ids
     elif names is not None and ids is None:
@@ -91,56 +136,26 @@ def pydownload(ids,names, infile, coverage, local):
         + str(ids) + '/quads?bbox=' + str(gboundlist[0]) \
         + '%2C' + str(gboundlist[1]) + '%2C' + str(gboundlist[2]) \
         + '%2C' + str(gboundlist[3])
+    #print(url)
     main = SESSION.get(url)
-    try:
-        if main.status_code == 200:
-            resp = main.json()
-            for itemlist in resp['items']:
-                if coverage is not None and int(itemlist['percent_covered']) >= int(coverage):
-                    downlink = itemlist['_links']['download']
-                    r = requests.get(downlink,allow_redirects=False)
-                    filelink = r.headers['Location']
-                    filename = str(r.headers['Location']).split('%22')[-2]
-                    localpath = os.path.join(local, names+'_'+filename)
-                    result = SESSION.get(filelink)
-                    if not os.path.exists(localpath) and result.status_code == 200:
-                        print("Downloading: " + str(localpath))
-                        f = open(localpath, 'wb')
-                    #print(filename)
-                    result = SESSION.get(filelink)
-                    if not os.path.exists(localpath) and result.status_code == 200:
-                        print("Downloading: " + str(localpath))
-                        obj = SmartDL(filelink, names+'_'+localpath)
-                        obj.start()
-                        path = obj.get_dest()
-                    else:
-                        if int(result.status_code) != 200:
-                            print("Encountered error with code: " + str(result.status_code) + ' for ' + str(localpath))
-                        elif int(result.status_code) == 200:
-                            print("File already exists SKIPPING: " + str(localpath))
-                elif coverage is None:
-                    downlink = itemlist['_links']['download']
-                    r = requests.get(downlink,allow_redirects=False)
-                    filelink=r.headers['Location']
-                    filename=str(r.headers['Location']).split('%22')[-2]
-                    localpath=os.path.join(local,names+'_'+filename)
-                    #print(filename)
-                    result = SESSION.get(filelink)
-                    if not os.path.exists(localpath) and result.status_code == 200:
-                        print("Downloading: " + str(localpath))
-                        obj = SmartDL(filelink, localpath)
-                        obj.start()
-                        path = obj.get_dest()
-                    else:
-                        if int(result.status_code) != 200:
-                            print("Encountered error with code: " + str(result.status_code) + ' for ' + str(localpath))
-                        elif int(result.status_code) == 200:
-                            print("File already exists SKIPPING: " + str(localpath))
-    except Exception as e:
-        print(e)
-    except (KeyboardInterrupt, SystemExit) as e:
-        print('Program escaped by User')
-        sys.exit()
+    if main.status_code == 200:
+        page=main.json()
+        hpage(page,names,coverage, local)
+        while page['_links'].get('_next') is not None:
+            try:
+                page_url = page['_links'].get('_next')
+                result = SESSION.get(page_url)
+                if result.status_code == 200:
+                    page=result.json()
+                    hpage(page,names,coverage, local)
+                else:
+                    print(result.status_code)
+            except Exception as e:
+                pass
+            except (KeyboardInterrupt, SystemExit) as e:
+                print('Program escaped by User')
+                sys.exit()
+
 
 # download(ids='af953970-7189-473a-8e26-24397577eaa2',infile=r'C:\Users\samapriya\Downloads\belem.geojson',coverage=None,
 #     local=r'C:\planet_demo')

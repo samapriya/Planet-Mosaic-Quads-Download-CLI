@@ -154,6 +154,12 @@ optional arguments:
 
 ## Changelog
 
+### v0.1.0
+
+- Improvements to installation
+- Now creates folders to download mosaic quads
+- Fixed issue with multipart downloader
+
 ### v0.0.8
 
 - Minor improvements

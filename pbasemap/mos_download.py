@@ -37,6 +37,61 @@ def download(ids,names, idlist, infile, coverage, local):
                 print('Processing: '+str(row['name']))
                 downloader(str(row['id']),str(row['name']),infile, coverage, local)
 
+#Check running orders
+def hpage(page,names,coverage, local):
+    try:
+        for things in page['items']:
+            downlink=(things['_links']['download'])
+            if coverage is not None and int(things['percent_covered']) >= int(coverage):
+                r = requests.get(downlink,allow_redirects=False)
+                filelink = r.headers['Location']
+                filename = str(r.headers['Location']).split('%22')[-2]
+                fpath=os.path.join(local,names)
+                if not os.path.exists(fpath):
+                    os.makedirs(fpath)
+                localpath = os.path.join(fpath,filename)
+                result = SESSION.get(filelink)
+                if not os.path.exists(localpath) and result.status_code == 200:
+                    print("Downloading: " + str(localpath))
+                    f = open(localpath, 'wb')
+                    for chunk in result.iter_content(chunk_size=512 * 1024):
+                        if chunk:
+                            f.write(chunk)
+                    f.close()
+                else:
+                    if int(result.status_code) != 200:
+                        print("Encountered error with code: " + str(result.status_code) + ' for ' + str(localpath))
+                    elif int(result.status_code) == 200:
+                        print("File already exists SKIPPING: " + str(localpath))
+            elif coverage is None:
+                downlink = things['_links']['download']
+                r = requests.get(downlink,allow_redirects=False)
+                filelink=r.headers['Location']
+                filename=str(r.headers['Location']).split('%22')[-2]
+                fpath=os.path.join(local,names)
+                if not os.path.exists(fpath):
+                    os.makedirs(fpath)
+                localpath = os.path.join(fpath,filename)
+                result = SESSION.get(filelink)
+                if not os.path.exists(localpath) and result.status_code == 200:
+                    print("Downloading: " + str(localpath))
+                    f = open(localpath, 'wb')
+                    for chunk in result.iter_content(chunk_size=512 * 1024):
+                        if chunk:
+                            f.write(chunk)
+                    f.close()
+                else:
+                    if int(result.status_code) != 200:
+                        print("Encountered error with code: " + str(result.status_code) + ' for ' + str(localpath))
+                    elif int(result.status_code) == 200:
+                        print("File already exists SKIPPING: " + str(localpath))
+    except Exception as e:
+        print(e)
+    except (KeyboardInterrupt, SystemExit) as e:
+        print('Program escaped by User')
+        sys.exit()
+
+
 # Get item id from item name
 def handle_page(names,response):
     for items in response['mosaics']:
@@ -91,55 +146,25 @@ def downloader(ids,names, infile, coverage, local):
         + str(ids) + '/quads?bbox=' + str(gboundlist[0]) \
         + '%2C' + str(gboundlist[1]) + '%2C' + str(gboundlist[2]) \
         + '%2C' + str(gboundlist[3])
+    #print(url)
     main = SESSION.get(url)
-    try:
-        if main.status_code == 200:
-            resp = main.json()
-            for itemlist in resp['items']:
-                if coverage is not None and int(itemlist['percent_covered']) >= int(coverage):
-                    downlink = itemlist['_links']['download']
-                    r = requests.get(downlink,allow_redirects=False)
-                    filelink = r.headers['Location']
-                    filename = str(r.headers['Location']).split('%22')[-2]
-                    localpath = os.path.join(local, names+'_'+filename)
-                    result = SESSION.get(filelink)
-                    if not os.path.exists(localpath) and result.status_code == 200:
-                        print("Downloading: " + str(localpath))
-                        f = open(localpath, 'wb')
-                        for chunk in result.iter_content(chunk_size=512 * 1024):
-                            if chunk:
-                                f.write(chunk)
-                        f.close()
-                    else:
-                        if int(result.status_code) != 200:
-                            print("Encountered error with code: " + str(result.status_code) + ' for ' + str(localpath))
-                        elif int(result.status_code) == 200:
-                            print("File already exists SKIPPING: " + str(localpath))
-                elif coverage is None:
-                    downlink = itemlist['_links']['download']
-                    r = requests.get(downlink,allow_redirects=False)
-                    filelink=r.headers['Location']
-                    filename=str(r.headers['Location']).split('%22')[-2]
-                    localpath=os.path.join(local,names+'_'+filename)
-                    #print(filename)
-                    result = SESSION.get(filelink)
-                    if not os.path.exists(localpath) and result.status_code == 200:
-                        print("Downloading: " + str(localpath))
-                        f = open(localpath, 'wb')
-                        for chunk in result.iter_content(chunk_size=512 * 1024):
-                            if chunk:
-                                f.write(chunk)
-                        f.close()
-                    else:
-                        if int(result.status_code) != 200:
-                            print("Encountered error with code: " + str(result.status_code) + ' for ' + str(localpath))
-                        elif int(result.status_code) == 200:
-                            print("File already exists SKIPPING: " + str(localpath))
-    except Exception as e:
-        print(e)
-    except (KeyboardInterrupt, SystemExit) as e:
-        print('Program escaped by User')
-        sys.exit()
+    if main.status_code == 200:
+        page=main.json()
+        hpage(page,names,coverage, local)
+        while page['_links'].get('_next') is not None:
+            try:
+                page_url = page['_links'].get('_next')
+                result = SESSION.get(page_url)
+                if result.status_code == 200:
+                    page=result.json()
+                    hpage(page,names,coverage, local)
+                else:
+                    print(result.status_code)
+            except Exception as e:
+                pass
+            except (KeyboardInterrupt, SystemExit) as e:
+                print('Program escaped by User')
+                sys.exit()
 
 # download(names=None,ids=None,idlist=r'C:\planet_demo\moslist.csv',infile=r'C:\Users\samapriya\Downloads\belem.geojson',coverage=80,
 #    local=r'C:\planet_demo')
